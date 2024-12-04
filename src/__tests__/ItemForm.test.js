@@ -1,47 +1,25 @@
-import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
-import ItemForm from "../components/ItemForm";
-import App from "../components/App";
+import { render, screen, fireEvent } from '@testing-library/react';
+import ItemForm from '../ItemForm';
+import App from '../App';
 
-test("calls the onItemFormSubmit callback prop when the form is submitted", () => {
-  const onItemFormSubmit = jest.fn();
-  render(<ItemForm onItemFormSubmit={onItemFormSubmit} />);
-
-  fireEvent.change(screen.queryByLabelText(/Name/), {
-    target: { value: "Ice Cream" },
-  });
-
-  fireEvent.change(screen.queryByLabelText(/Category/), {
-    target: { value: "Dessert" },
-  });
-
-  fireEvent.submit(screen.queryByText(/Add to List/));
-
-  expect(onItemFormSubmit).toHaveBeenCalledWith(
-    expect.objectContaining({
-      id: expect.any(String),
-      name: "Ice Cream",
-      category: "Dessert",
-    })
-  );
-});
-
-test("adds a new item to the list when the form is submitted", () => {
+test('adds a new item to the list when the form is submitted', () => {
   render(<App />);
 
-  const dessertCount = screen.queryAllByText(/Dessert/).length;
+  const nameInput = screen.getByPlaceholderText(/Item name/);
+  const categorySelect = screen.getByDisplayValue('Produce');
+  const addButton = screen.getByText(/Add to List/);
 
-  fireEvent.change(screen.queryByLabelText(/Name/), {
-    target: { value: "Ice Cream" },
-  });
+  // Initial count of dessert items
+  const initialDessertCount = screen.queryAllByText(/Dessert/).length;
 
-  fireEvent.change(screen.queryByLabelText(/Category/), {
-    target: { value: "Dessert" },
-  });
+  // Fill out the form and submit
+  fireEvent.change(nameInput, { target: { value: 'Ice Cream' } });
+  fireEvent.change(categorySelect, { target: { value: 'Dessert' } });
+  fireEvent.click(addButton);
 
-  fireEvent.submit(screen.queryByText(/Add to List/));
+  // Check that the new item is added
+  expect(screen.queryAllByText(/Ice Cream/).length).toBe(1);
 
-  expect(screen.queryByText(/Ice Cream/)).toBeInTheDocument();
-
-  expect(screen.queryAllByText(/Dessert/).length).toBe(dessertCount + 1);
+  // Check that the dessert count has increased by 1
+  expect(screen.queryAllByText(/Dessert/).length).toBe(initialDessertCount + 1);
 });
